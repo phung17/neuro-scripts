@@ -1,4 +1,4 @@
-#!/bin/bash -l 
+#!/bin/bash -l
 # Script to perform general inter-slice motion correction
 # Written: David Rotenberg
 # Modified: David Qixiang Chen
@@ -7,12 +7,12 @@ usage()
 {
 	cat<<EOF
 	usage: $0 options arg
-	
+
 	OPTIONS:
 		-a	Affix to append to images and transforms. Default is "_nobet"
-		-v	Vector calculations only. 
+		-v	Vector calculations only.
 		-o	Output file name, without extension. Default is DWI_CORRECTED
-	
+
 	ARG
 		Name of reference file without extension.
 EOF
@@ -53,7 +53,7 @@ done
 
 if [ -n "${!OPTIND}" ]
 	then scan="${!OPTIND}"
-else 
+else
 	usage
 	exit
 fi
@@ -83,10 +83,10 @@ do
 	if ! $MOTION_COR_ONLY; then
 		flirt -in ""$volname".nii.gz" -ref vol0000.nii.gz -nosearch -noresampblur -omat "$volname"_trans"$affix".xfm -interp spline -out "$volname"_reg"$affix".nii.gz -paddingsize 1
 	else
-		echo "Apply transform: $volname"					
+		echo "Apply transform: $volname"
 		flirt -interp spline -in "$volname" -ref vol0000.nii.gz -out "$volname"_reg"$affix".nii.gz -applyxfm -init  "$volname"_trans"$affix".xfm -paddingsize 1
 	fi
-	#echo "Apply transform: $volname"	
+	#echo "Apply transform: $volname"
 	#resample on the original
 	#flirt -interp spline -in "$volname" -ref vol0000.nii.gz -out "$volname"_reg.nii.gz -applyxfm -init  "$volname"_trans.xfm -paddingsize 1
 done
@@ -95,7 +95,7 @@ echo "fslmerge"
 
 fslmerge -t "$mcored_file".nii.gz *reg"$affix".nii.gz
 
-rm vol*nii*	
+rm vol*nii*
 
 
 echo "Calculating transforms"
@@ -110,12 +110,17 @@ echo "Convert to nrrd"
 
 # Conversion to NRRD
 
-DWIConvert --inputBVectors $scan.bvec --inputBValues $scan.bval --inputVolume $mcored_file.nii.gz --outputVolume tmp.nrrd --conversionMode FSLToNrrd
+slicerDWIConvert.sh --inputBVectors $scan.bvec --inputBValues $scan.bval --inputVolume $mcored_file.nii.gz --outputVolume tmp.nrrd --conversionMode FSLToNrrd
 unu save -i tmp.nrrd -o $dwi_out -f nrrd
 rm tmp.nrrd
 
-cat $dwi_out | head -19  > tmp.nhdr
-cat newdirs.nhdr >> tmp.nhdr
-mv tmp.nhdr $dwi_out
+cat $dwi_out | head -25  > tmp.nhdr
+cat tmp.nhdr | egrep -v '^*#' > tmp2.nhdr
+cat tmp2.nhdr | head -17  > tmp3.nhdr
 
 
+#cat $dwi_out | head -19  > tmp.nhdr
+cat newdirs.nhdr >> tmp3.nhdr
+cat tmp3.nhdr  > $dwi_out
+
+rm tmp*.nhdr
