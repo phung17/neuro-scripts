@@ -25,6 +25,7 @@ class Eddycor:
             print dirs
             for dti in dirs:
                 self.doCor(dti)
+                os.chdir('..')
         else:
             self.doCor(self.options.dir)
 
@@ -65,7 +66,7 @@ class Eddycor:
         elif (options.is_all):
             self.doNrrdEddyCor(dir)
             self.doFSLCorrection(dir)
-            self.doAntsCorrection(dir)            
+            self.doAntsCorrection(dir)
         else:
             self.doFSLCorrection(dir)
 
@@ -153,7 +154,7 @@ class Eddycor:
         os.system(motioncorCmd)
 
         #flip vectors
-        import flipGradVectors as fgv        
+        import flipGradVectors as fgv
         ax = options.invert_vecs
         if not ax=='none':
             fgv.flip_file('DWI_CORRECTED.nhdr','DWI_CORRECTED.nhdr', axis=ax)
@@ -233,4 +234,3 @@ if __name__ == '__main__':
     else:
         prog = Eddycor(options, args)
         prog.goCor()
-
