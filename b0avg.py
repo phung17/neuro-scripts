@@ -1,10 +1,10 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 from glob import glob
 from optparse import OptionParser
 import os
 import sys
 import numpy
-from nrrd import NrrdReader
+from pynrrd import NrrdReader
 
 def getOrderStr(ax, num):
     a = numpy.zeros(4, dtype=numpy.int)
@@ -25,7 +25,7 @@ class B0avg:
         ofile = self.options.output
 
         reader = NrrdReader()
-        iparams, bindata =  reader.getFileContent(ifile)
+        iparams, bindata =  reader.load(ifile)
 	#iparams = iparams._data
 
         b0n = iparams['b0num']
@@ -60,7 +60,7 @@ class B0avg:
 
 
         count = 0
-        for n,i in enumerate(iparams[NrrdReader.grdkey]):
+        for n,i in enumerate(iparams[NrrdReader.grdkey][0]):
             if count > 0 and n <= b0n:
                 continue
 
